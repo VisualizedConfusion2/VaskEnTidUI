@@ -14,13 +14,15 @@ namespace VaskEnTidUI.Pages
         }
 
         [BindProperty]
-        [Required(ErrorMessage = "Brugernavn er påkrævet")]
+        [Required(ErrorMessage = "Telefonnummer eller Email er påkrævet")]
         public string Username { get; set; } = string.Empty;
 
         [BindProperty]
         [Required(ErrorMessage = "Adgangskode er påkrævet")]
         [DataType(DataType.Password)]
         public string Password { get; set; } = string.Empty;
+
+        public string ErrorMessage { get; set; } // <-- This will hold the "wrong password" message
 
         public void OnGet()
         {
@@ -39,6 +41,8 @@ namespace VaskEnTidUI.Pages
                 _logger.LogInformation("Bruger loggede ind: {Username}", Username);
                 return RedirectToPage("/Index");
             }
+            ErrorMessage = "Der er indtastet et forkert brugernavn eller adgangskode"; 
+            
 
             ModelState.AddModelError(string.Empty, "Ugyldigt loginforsøg.");
             return Page();
