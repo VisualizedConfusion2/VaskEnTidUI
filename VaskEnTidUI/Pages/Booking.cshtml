@@ -1,0 +1,93 @@
+﻿@page
+@model VaskEnTidUI.Pages.BookingModel
+@{
+    ViewData["Title"] = "Maskine Booking";
+    var today = DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd");
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <h2>Maskine Booking</h2>
+            <form method="post">
+                <div class="form-group">
+                    <label asp-for="MachineTypeID">Maskintype</label>
+                    <select asp-for="MachineTypeID" class="form-control" id="machineTypeSelect">
+                        <option value="">-- Vælg type --</option>
+                        @foreach (var type in Model.MachineTypes)
+                        {
+                            <option value="@type.MachineTypeId">@type.Type</option>
+                        }
+                    </select>
+                    <span asp-validation-for="MachineTypeID" class="text-danger"></span>
+                </div>
+
+
+                <div class="form-group" id="machineDiv" style="display:none;">
+                    <label asp-for="MachineID">Maskine</label>
+                    <select asp-for="MachineID" class="form-control" id="machineSelect">
+                        <option value="">-- Vælg maskine --</option>
+                        @foreach (var machine in Model.Machines)
+                        {
+                            <option value="@machine.MachineId" data-type="@machine.MachineTypeId">
+                                @machine.Name
+                            </option>
+                        }
+                    </select>
+                    <span asp-validation-for="MachineID" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Date">Dato</label>
+                    <input asp-for="Date" class="form-control" type="date" min="@today" value="@today" />
+                    <span asp-validation-for="Date" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="StartTime">Start tid</label>
+                    <input asp-for="StartTime" class="form-control" type="time" />
+                    <span asp-validation-for="StartTime" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="EndTime">Slut tid</label>
+                    <input asp-for="EndTime" class="form-control" type="time" />
+                    <span asp-validation-for="EndTime" class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Gem</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        const machineTypeSelect = document.getElementById("machineTypeSelect");
+        const machineDiv = document.getElementById("machineDiv");
+        const machineSelect = document.getElementById("machineSelect");
+
+        machineTypeSelect.addEventListener("change", function () {
+            const typeId = this.value;
+
+            if (!typeId) {
+                machineDiv.style.display = "none";
+                machineSelect.value = "";
+                return;
+            }
+
+            machineDiv.style.display = "block";
+
+            // Show only machines that match selected type
+            Array.from(machineSelect.options).forEach(option => {
+                if (!option.value) return; // keep placeholder
+                option.style.display = option.getAttribute("data-type") === typeId ? "block" : "none";
+            });
+
+            // Reset selection
+            machineSelect.value = "";
+        });
+    </script>
+}
