@@ -7,8 +7,9 @@
 
 <div class="container mt-5">
     <div class="row justify-content-center">
-        <div class="col-md-4">
+        <div class="col-md-5">
             <h2>Maskine Booking</h2>
+
             <form method="post">
                 <div class="form-group">
                     <label asp-for="MachineTypeID">Maskintype</label>
@@ -21,7 +22,6 @@
                     </select>
                     <span asp-validation-for="MachineTypeID" class="text-danger"></span>
                 </div>
-
 
                 <div class="form-group" id="machineDiv" style="display:none;">
                     <label asp-for="MachineID">Maskine</label>
@@ -45,15 +45,28 @@
 
                 <div class="form-group">
                     <label asp-for="StartTime">Start tid</label>
-                    <input asp-for="StartTime" class="form-control" type="time" />
+                    <input asp-for="StartTime" class="form-control" type="time" step="900" />
                     <span asp-validation-for="StartTime" class="text-danger"></span>
                 </div>
 
                 <div class="form-group">
                     <label asp-for="EndTime">Slut tid</label>
-                    <input asp-for="EndTime" class="form-control" type="time" />
+                    <input asp-for="EndTime" class="form-control" type="time" step="900" />
                     <span asp-validation-for="EndTime" class="text-danger"></span>
                 </div>
+
+                @if (Model.ExistingBookings.Any())
+                {
+                    <div class="alert alert-warning">
+                        <strong>Bemærk:</strong> Denne maskine har allerede følgende bookings:
+                        <ul>
+                            @foreach (var b in Model.ExistingBookings)
+                            {
+                                <li>@b.Date.ToString("yyyy-MM-dd") fra @b.StartTime.ToString(@"hh\:mm") til @b.EndTime.ToString(@"hh\:mm")</li>
+                            }
+                        </ul>
+                    </div>
+                }
 
                 <button type="submit" class="btn btn-primary">Gem</button>
             </form>
@@ -82,11 +95,10 @@
 
             // Show only machines that match selected type
             Array.from(machineSelect.options).forEach(option => {
-                if (!option.value) return; // keep placeholder
+                if (!option.value) return; // placeholder
                 option.style.display = option.getAttribute("data-type") === typeId ? "block" : "none";
             });
 
-            // Reset selection
             machineSelect.value = "";
         });
     </script>

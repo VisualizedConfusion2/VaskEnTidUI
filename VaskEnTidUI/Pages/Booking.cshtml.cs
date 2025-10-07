@@ -2,16 +2,19 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using VaskEnTidLib.Models;
+using VaskEnTidLib.Services;
 
 namespace VaskEnTidUI.Pages
 {
     public class BookingModel : PageModel
     {
-        private readonly ILogger<LoginModel> _logger;
+        private readonly ILogger<BookingModel> _logger;
+        private readonly BookingService _bookingService;
 
-        public BookingModel(ILogger<LoginModel> logger)
+        public BookingModel(ILogger<BookingModel> logger)
         {
             _logger = logger;
+            _bookingService = new BookingService();
         }
 
         [BindProperty]
@@ -36,17 +39,19 @@ namespace VaskEnTidUI.Pages
 
         public List<Machine> Machines { get; set; } = new();
         public List<MachineType> MachineTypes { get; set; } = new();
+        public List<Booking> ExistingBookings { get; set; } = new(); // <-- new
 
         public void OnGet()
         {
-            _loadMachines();
-            _loadMachineTypes();
+            LoadMachines();
+            LoadMachineTypes();
         }
 
         public IActionResult OnPost()
         {
-            _loadMachines();
-            _loadMachineTypes();
+            LoadMachines();
+            LoadMachineTypes();
+
             // Custom validation
             if (StartTime < new TimeOnly(7, 0) || EndTime > new TimeOnly(21, 0))
             {
@@ -58,17 +63,40 @@ namespace VaskEnTidUI.Pages
                 ModelState.AddModelError(string.Empty, "Start tid skal være før slut tid");
             }
 
+            // Load existing bookings for the selected machine
+            if (MachineID != 0)
+            {
+                ExistingBookings = _bookingService.GetBookingsByMachine(MachineID).ToList();
+            }
+
             if (!ModelState.IsValid)
             {
                 return Page();
             }
 
-            // Process booking here
+            var booking = new Booking
+            {
+                UserId = 1, // Replace with actual logged-in user ID
+                MachineId = MachineID,
+                Date = Date,
+                StartTime = StartTime,
+                EndTime = EndTime
+            };
+
+            try
+            {
+                _bookingService.CreateBooking(booking);
+            }
+            catch (InvalidOperationException ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return Page();
+            }
 
             return RedirectToPage("Success");
         }
 
-        private void _loadMachineTypes()
+        private void LoadMachineTypes()
         {
             MachineTypes = new List<MachineType>
             {
@@ -77,7 +105,7 @@ namespace VaskEnTidUI.Pages
             };
         }
 
-        private void _loadMachines()
+        private void LoadMachines()
         {
             Machines = new List<Machine>
             {
