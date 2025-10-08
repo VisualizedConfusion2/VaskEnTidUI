@@ -12,15 +12,15 @@
 
             <form method="post">
                 <div class="form-group">
-                    <label asp-for="MachineTypeID">Maskintype</label>
-                    <select asp-for="MachineTypeID" class="form-control" id="machineTypeSelect">
+                    <label asp-for="MachineType">Maskintype</label>
+                    <select asp-for="MachineType" class="form-control" id="machineTypeSelect">
                         <option value="">-- Vælg type --</option>
                         @foreach (var type in Model.MachineTypes)
                         {
-                            <option value="@type.MachineTypeId">@type.Type</option>
+                            <option value="@type">@type</option>
                         }
                     </select>
-                    <span asp-validation-for="MachineTypeID" class="text-danger"></span>
+                    <span asp-validation-for="MachineType" class="text-danger"></span>
                 </div>
 
                 <div class="form-group" id="machineDiv" style="display:none;">
@@ -29,7 +29,7 @@
                         <option value="">-- Vælg maskine --</option>
                         @foreach (var machine in Model.Machines)
                         {
-                            <option value="@machine.MachineId" data-type="@machine.MachineTypeId">
+                            <option value="@machine.MachineID" data-type="@machine.MachineType">
                                 @machine.Name
                             </option>
                         }
@@ -54,20 +54,6 @@
                     <input asp-for="EndTime" class="form-control" type="time" step="900" />
                     <span asp-validation-for="EndTime" class="text-danger"></span>
                 </div>
-
-                @if (Model.ExistingBookings.Any())
-                {
-                    <div class="alert alert-warning">
-                        <strong>Bemærk:</strong> Denne maskine har allerede følgende bookings:
-                        <ul>
-                            @foreach (var b in Model.ExistingBookings)
-                            {
-                                <li>@b.Date.ToString("yyyy-MM-dd") fra @b.StartTime.ToString(@"hh\:mm") til @b.EndTime.ToString(@"hh\:mm")</li>
-                            }
-                        </ul>
-                    </div>
-                }
-
                 <button type="submit" class="btn btn-primary">Gem</button>
             </form>
         </div>
@@ -83,9 +69,9 @@
         const machineSelect = document.getElementById("machineSelect");
 
         machineTypeSelect.addEventListener("change", function () {
-            const typeId = this.value;
+            const selectedType = this.value;
 
-            if (!typeId) {
+            if (!selectedType) {
                 machineDiv.style.display = "none";
                 machineSelect.value = "";
                 return;
@@ -93,13 +79,13 @@
 
             machineDiv.style.display = "block";
 
-            // Show only machines that match selected type
             Array.from(machineSelect.options).forEach(option => {
                 if (!option.value) return; // placeholder
-                option.style.display = option.getAttribute("data-type") === typeId ? "block" : "none";
+                option.style.display = option.getAttribute("data-type") === selectedType ? "block" : "none";
             });
 
             machineSelect.value = "";
         });
+
     </script>
 }
