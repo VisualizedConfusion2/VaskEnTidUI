@@ -54,7 +54,11 @@
                     <input asp-for="EndTime" class="form-control" type="time" step="900" />
                     <span asp-validation-for="EndTime" class="text-danger"></span>
                 </div>
-                <button type="submit" class="btn btn-primary">Gem</button>
+                @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                {
+                    <div class="alert alert-danger mt-2">@Model.ErrorMessage</div>
+                }
+                <button type="submit" class="btn btn-primary mt-2">Opret Booking</button>
             </form>
         </div>
     </div>

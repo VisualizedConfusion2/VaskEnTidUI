@@ -10,11 +10,13 @@ namespace VaskEnTidUI.Pages
     {
         private readonly ILogger<BookingModel> _logger;
         private readonly MachineService _machineService;
+        private readonly BookingService _bookingService;
 
-        public BookingModel(ILogger<BookingModel> logger, MachineService machineService)
+        public BookingModel(ILogger<BookingModel> logger, MachineService machineService, BookingService bookingService)
         {
             _logger = logger;
             _machineService = machineService;
+            _bookingService = bookingService;
         }
 
         [BindProperty]
@@ -36,7 +38,7 @@ namespace VaskEnTidUI.Pages
         [BindProperty]
         [Required(ErrorMessage = "Slut tid er påkrævet")]
         public TimeOnly EndTime { get; set; }
-
+        public string ErrorMessage { get; set; }
         public List<Machine> Machines { get; set; } = new();
         public List<String> MachineTypes { get; set; } = new();
 
@@ -58,7 +60,7 @@ namespace VaskEnTidUI.Pages
 
         private void LoadMachineTypes()
         {
-            Machines = _machineService.GetMachinesByUserId(1);
+            Machines = _machineService.GetMachinesByUserId(int.Parse(HttpContext.Session.GetString("UserId")));
             MachineTypes = Machines.Select(m => m.MachineType).Distinct().ToList();
         }
 
@@ -69,5 +71,40 @@ namespace VaskEnTidUI.Pages
                 Machines = Machines.Where(m => m.MachineType == MachineType).ToList();
             }
         }
+
+        public IActionResult OnPost()
+        {
+            LoadMachines();
+            LoadMachineTypes();
+            if (Date < DateOnly.FromDateTime(DateTime.Now))
+            {
+                ErrorMessage = "Vælg venligst en dato, der ikke ligger før i dag!";
+                return Page();
+            }
+            if (StartTime >= EndTime)
+            {
+                ErrorMessage = "Starttid skal være før sluttid";
+                return Page();
+            }
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("UserId")))
+            {
+                ErrorMessage = "Vi kan ikke se at du er logget ind";
+                return Page();
+            }
+            try
+            {
+                if (_bookingService.CreateBooking(int.Parse(HttpContext.Session.GetString("UserId")), MachineID, Date, StartTime, EndTime) == true)
+                {
+                    return Page();
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Fejl: {ex}";
+                return Page();
+            }
+            return Page();
+        }
+
     }
 }
