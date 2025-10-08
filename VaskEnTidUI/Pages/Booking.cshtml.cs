@@ -40,10 +40,20 @@ namespace VaskEnTidUI.Pages
         public List<Machine> Machines { get; set; } = new();
         public List<String> MachineTypes { get; set; } = new();
 
-        public void OnGet()
+        public IActionResult OnGet()
         {
+            // Check if user is logged in
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("UserId")))
+            {
+                // Not logged in – redirect to login page
+                return RedirectToPage("/Login");
+            }
+
+            // User is logged in – continue loading data
             LoadMachines();
             LoadMachineTypes();
+
+            return Page();
         }
 
         private void LoadMachineTypes()

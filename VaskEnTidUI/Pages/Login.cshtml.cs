@@ -3,16 +3,19 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Data.SqlClient;
 using VaskEnTidLib.Models;
+using VaskEnTidLib.Services;
 
 namespace VaskEnTidUI.Pages
 {
     public class LoginModel : PageModel
     {
         private readonly ILogger<LoginModel> _logger;
+        private readonly UserService _userService;
 
-        public LoginModel(ILogger<LoginModel> logger)
+        public LoginModel(ILogger<LoginModel> logger, UserService userService)
         {
             _logger = logger;
+            _userService = userService;
         }
 
         [BindProperty]
@@ -38,56 +41,20 @@ namespace VaskEnTidUI.Pages
                 return Page();
             }
 
-            var user = GetUserByEmail(Email);
-
-            if (user == null || user.Password != Password)
+            if (!_userService.TryAuthenticate(Email, Password, out var user))
             {
+                // Authentication failed
                 ErrorMessage = "Ugyldig email eller adgangskode.";
                 return Page();
             }
 
             // Login successful – save session
-            HttpContext.Session.SetString("UserID", user.UserId.ToString());
+            HttpContext.Session.SetString("UserId", user.UserId.ToString());
             HttpContext.Session.SetString("UserName", user.Name);
+            HttpContext.Session.SetString("DepartmentId", user.DepartmentID.ToString());
+            HttpContext.Session.SetString("UserTypeId", user.UserTypeID.ToString());
 
             return RedirectToPage("/Index");
-        }
-
-        private User? GetUserByEmail(string email)
-        {
-            string connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=LaundryManagementDB;Integrated Security=True;Persist Security Info=False;Pooling=False;MultipleActiveResultSets=False;Encrypt=False;TrustServerCertificate=False;Application Name=\"SQL Server Management Studio\";Command Timeout=30";
-
-
-            using var conn = new SqlConnection(connectionString);
-            conn.Open();
-
-            var cmd = new SqlCommand(@"
-            SELECT u.UserId, u.ApartmentNumber, u.Name, u.Phone, u.Email, u.Password,
-                   udm.DepartmentID, udm.UserTypeID
-            FROM Users u
-            INNER JOIN UserDepartmentMappings udm ON u.UserId = udm.UserID
-            WHERE u.Email = @Email
-        ", conn);
-
-            cmd.Parameters.AddWithValue("@Email", email);
-
-            using var reader = cmd.ExecuteReader();
-            if (reader.Read())
-            {
-                return new User
-                {
-                    UserId = (int)reader["UserId"],
-                    ApartmentNumber = reader["ApartmentNumber"].ToString() ?? string.Empty,
-                    Name = reader["Name"].ToString() ?? string.Empty,
-                    Phone = reader["Phone"].ToString() ?? string.Empty,
-                    Email = reader["Email"].ToString() ?? string.Empty,
-                    Password = reader["Password"].ToString() ?? string.Empty,
-                    DepartmentID = (int)reader["DepartmentID"],
-                    UserTypeID = (int)reader["UserTypeID"]
-                };
-            }
-
-            return null;
         }
     }
 }
