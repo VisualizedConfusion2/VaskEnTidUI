@@ -15,6 +15,13 @@ namespace VaskEnTidUI
             builder.Services.AddSingleton(new MachineRepo("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=LaundryManagementDB;Integrated Security=True;Persist Security Info=False;Pooling=False;MultipleActiveResultSets=False;Encrypt=False;TrustServerCertificate=False;Application Name=\"SQL Server Management Studio\";Command Timeout=30"));
             builder.Services.AddSingleton<MachineService>();
 
+            builder.Services.AddDistributedMemoryCache(); // Stores session in memory
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromHours(1); // Session expires after 1 hour
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
 
             var app = builder.Build();
 
@@ -30,6 +37,8 @@ namespace VaskEnTidUI
             app.UseStaticFiles();
 
             app.UseRouting();
+
+            app.UseSession();
 
             app.UseAuthorization();
 
