@@ -9,12 +9,12 @@ namespace VaskEnTidUI.Pages
     public class BookingModel : PageModel
     {
         private readonly ILogger<BookingModel> _logger;
-        private readonly BookingService _bookingService;
+        //private BookingService _bookingService;
 
         public BookingModel(ILogger<BookingModel> logger)
         {
             _logger = logger;
-            _bookingService = new BookingService();
+            //_bookingService = new BookingService();
         }
 
         [BindProperty]
@@ -66,7 +66,7 @@ namespace VaskEnTidUI.Pages
             // Load existing bookings for the selected machine
             if (MachineID != 0)
             {
-                ExistingBookings = _bookingService.GetBookingsByMachine(MachineID).ToList();
+                //ExistingBookings = _bookingService.GetBookingsByMachine(MachineID).ToList();
             }
 
             if (!ModelState.IsValid)
@@ -85,7 +85,7 @@ namespace VaskEnTidUI.Pages
 
             try
             {
-                _bookingService.CreateBooking(booking);
+                //_bookingService.CreateBooking(booking);
             }
             catch (InvalidOperationException ex)
             {
