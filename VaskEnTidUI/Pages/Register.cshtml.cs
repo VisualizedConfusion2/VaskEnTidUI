@@ -1,16 +1,20 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using VaskEnTidLib.Services;
+using VaskEnTidLib.Models;
 
 namespace VaskEnTidUI.Pages
 {
     public class RegisterModel : PageModel
     {
         private readonly ILogger<LoginModel> _logger;
+        private readonly UserService _userService;
 
-        public RegisterModel(ILogger<LoginModel> logger)
+        public RegisterModel(ILogger<LoginModel> logger, UserService userService)
         {
             _logger = logger;
+            _userService = userService;
         }
 
         [BindProperty]
@@ -35,6 +39,7 @@ namespace VaskEnTidUI.Pages
         [DataType(DataType.Password)]
         [Compare("Password", ErrorMessage = "Adgangskode matcher ikke")]
         public string ConfirmPassword { get; set; }
+        public string ErrorMessage { get; set; }
 
         public void OnGet()
         {
@@ -47,15 +52,20 @@ namespace VaskEnTidUI.Pages
                 return Page();
             }
 
-            // Dummy login logik – du kan skifte det ud med rigtig brugerhåndtering
-            if (PhoneNumber == "112")
+            User _user = _userService.RegisterUserByCreationCode(RegisterCode, PhoneNumber, Email, Password);
+            if (_user == null)
             {
-                _logger.LogInformation("Bruger oprettet");
-                return RedirectToPage("/Index");
+                ErrorMessage = "Forkert registreringskoden";
+                return Page();
             }
 
-            ModelState.AddModelError(string.Empty, "Ugyldigt registrerforsøg.");
-            return Page();
+            // Register successful – save session
+            HttpContext.Session.SetString("UserId", _user.UserId.ToString());
+            HttpContext.Session.SetString("UserName", _user.Name);
+            HttpContext.Session.SetString("DepartmentId", _user.DepartmentID.ToString());
+            HttpContext.Session.SetString("UserTypeId", _user.UserTypeID.ToString());
+
+            return RedirectToPage("/Index");
         }
     }
 }
