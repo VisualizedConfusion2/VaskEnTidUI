@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using VaskEnTidLib.Models;
+using VaskEnTidLib.Repositories;
 using VaskEnTidLib.Services;
 
 namespace VaskEnTidUI.Pages
@@ -42,6 +43,7 @@ namespace VaskEnTidUI.Pages
         public string SuccesMessage { get; set; }
         public List<Machine> Machines { get; set; } = new();
         public List<String> MachineTypes { get; set; } = new();
+        public List<Booking> UserBookings { get; set; } = new();
 
         public IActionResult OnGet()
         {
@@ -51,12 +53,17 @@ namespace VaskEnTidUI.Pages
                 // Not logged in – redirect to login page
                 return RedirectToPage("/Login");
             }
-
             // User is logged in – continue loading data
+
             LoadMachines();
             LoadMachineTypes();
+            LoadUserBookings();
 
             return Page();
+        }
+        private void LoadUserBookings()
+        {
+            UserBookings = _bookingService.GetBookingsByUserId(int.Parse(HttpContext.Session.GetString("UserId")));
         }
 
         private void LoadMachineTypes()
@@ -75,21 +82,28 @@ namespace VaskEnTidUI.Pages
 
         public IActionResult OnPost()
         {
-            LoadMachines();
-            LoadMachineTypes();
             if (Date < DateOnly.FromDateTime(DateTime.Now))
             {
                 ErrorMessage = "Vælg venligst en dato, der ikke ligger før i dag!";
+                LoadMachines();
+                LoadMachineTypes();
+                LoadUserBookings();
                 return Page();
             }
             if (StartTime >= EndTime)
             {
                 ErrorMessage = "Starttid skal være før sluttid";
+                LoadMachines();
+                LoadMachineTypes();
+                LoadUserBookings();
                 return Page();
             }
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("UserId")))
             {
                 ErrorMessage = "Vi kan ikke se at du er logget ind";
+                LoadMachines();
+                LoadMachineTypes();
+                LoadUserBookings();
                 return Page();
             }
             try
@@ -98,16 +112,26 @@ namespace VaskEnTidUI.Pages
                 if (result.Success)
                 {
                     SuccesMessage = "Booking oprettet succesfuldt!";
+                    LoadMachines();
+                    LoadMachineTypes();
+                    LoadUserBookings();
                     return Page();
                 }
                 else
                 {
                     ErrorMessage = result.ErrorMessage ?? "Der opstod en fejl under booking.";
+                    LoadMachines();
+                    LoadMachineTypes();
+                    LoadUserBookings();
+                    return Page();
                 }
             }
             catch (Exception ex)
             {
                 ErrorMessage = $"Fejl: {ex}";
+                LoadMachines();
+                LoadMachineTypes();
+                LoadUserBookings();
                 return Page();
             }
             return Page();
