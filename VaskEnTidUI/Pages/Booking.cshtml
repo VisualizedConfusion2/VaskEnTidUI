@@ -67,6 +67,34 @@
             </form>
         </div>
     </div>
+
+    <table class="bookingtable">
+        <tbody>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Dato</th>
+                        <th>Start Tid</th>
+                        <th>Slut Tid</th>
+                        <th>Maskine</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var booking in Model.UserBookings)
+                    {
+                        var machine = Model.Machines.FirstOrDefault(m => m.MachineID == booking.MachineID);
+                        var machineName = machine != null ? machine.Name : "Ukendt";
+                        <tr>
+                            <td>@booking.Date.ToString("MM/dd/yyyy")</td>
+                            <td>@booking.StartTime.ToString("HH\\:mm")</td>
+                            <td>@booking.EndTime.ToString("HH\\:mm")</td>
+                            <td>@machineName</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </tbody>
+    </table>
 </div>
 
 @section Scripts {
