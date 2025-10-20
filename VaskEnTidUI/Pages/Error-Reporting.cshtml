@@ -10,6 +10,46 @@
         </div>
     </div>
 
+
+    <table class="errorreporttable">
+        <tbody>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Error ID</th>
+                        <th>Machine ID</th>
+                        <th>Machine Name</th>
+                        <th>User ID</th>
+                        <th>User Name</th>
+                        <th>Error Type</th>
+                        <th>Status</th>
+                        <th>Description</th>
+                        <th>Date Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var error in Model.ErrorReports)
+                    {
+                        <tr>
+                            <td>@error.ErrorID</td>
+                            <td>@error.MachineID</td>
+                            <td>@error.MachineName</td>
+                            <td>@error.UserID</td>
+                            <td>@error.UserName</td>
+                            <td>@error.ErrorType</td>
+                            <td>@error.Status</td>
+                            <td>@error.Description</td>
+                            <td>@error.DateCreated.ToString("dd/MM/yyyy HH\\:mm")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </tbody>
+    </table>
+
+
+
+
     @section Scripts {
         <partial name="_ValidationScriptsPartial" />
     }
