@@ -1,50 +1,55 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.ComponentModel.DataAnnotations;
+using VaskEnTidLib.Repositories;
 
 namespace VaskEnTidUI.Pages
 {
     public class Manage_ProfileModel : PageModel
     {
-        private readonly ILogger<Manage_ProfileModel> _logger;
+        private readonly UserRepo _userRepo;
 
-        public Manage_ProfileModel(ILogger<Manage_ProfileModel> logger)
+        public Manage_ProfileModel(UserRepo userRepo)
         {
-            _logger = logger;
+            _userRepo = userRepo;
         }
 
-        [BindProperty]
-        [Required(ErrorMessage = "Telefonnummer eller Email er påkrævet")]
-        public string Username { get; set; } = string.Empty;
+        [BindProperty] public int UserId { get; set; }
+        [BindProperty] public string? ApartmentNumber { get; set; }
+        [BindProperty] public string? Name { get; set; }
+        [BindProperty] public string? Phone { get; set; }
+        [BindProperty] public string? Email { get; set; }
+        [BindProperty] public string? Password { get; set; }
 
-        [BindProperty]
-        [Required(ErrorMessage = "Adgangskode er påkrævet")]
-        [DataType(DataType.Password)]
-        public string Password { get; set; } = string.Empty;
-
-        public string ErrorMessage { get; set; } // <-- This will hold the "wrong password" message
+        public string? SuccessMessage { get; set; }
+        public string? ErrorMessage { get; set; }
 
         public void OnGet()
         {
+            // Ingen datahentning – siden bruges kun til opdatering
         }
 
         public IActionResult OnPost()
         {
-            if (!ModelState.IsValid)
+            if (UserId <= 0)
             {
+                ErrorMessage = "Indtast et gyldigt bruger-ID.";
                 return Page();
             }
 
-            // Dummy login logik – du kan skifte det ud med rigtig brugerhåndtering
-            if (Username == "admin" && Password == "1234")
-            {
-                _logger.LogInformation("Bruger loggede ind: {Username}", Username);
-                return RedirectToPage("/Index");
-            }
-            ErrorMessage = "Der er indtastet et forkert brugernavn eller adgangskode";
+            bool updated = _userRepo.UpdateUserById(
+                UserId,
+                ApartmentNumber,
+                Name,
+                Phone,
+                Email,
+                string.IsNullOrWhiteSpace(Password) ? null : Password
+            );
 
+            if (updated)
+                SuccessMessage = "Bruger blev opdateret succesfuldt.";
+            else
+                ErrorMessage = "Kunne ikke opdatere bruger. Tjek at bruger-ID’et eksisterer.";
 
-            ModelState.AddModelError(string.Empty, "Ugyldigt loginforsøg.");
             return Page();
         }
     }
