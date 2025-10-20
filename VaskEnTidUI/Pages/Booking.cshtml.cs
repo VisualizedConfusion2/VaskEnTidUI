@@ -39,6 +39,7 @@ namespace VaskEnTidUI.Pages
         [Required(ErrorMessage = "Slut tid er påkrævet")]
         public TimeOnly EndTime { get; set; }
         public string ErrorMessage { get; set; }
+        public string SuccesMessage { get; set; }
         public List<Machine> Machines { get; set; } = new();
         public List<String> MachineTypes { get; set; } = new();
 
@@ -93,9 +94,15 @@ namespace VaskEnTidUI.Pages
             }
             try
             {
-                if (_bookingService.CreateBooking(int.Parse(HttpContext.Session.GetString("UserId")), MachineID, Date, StartTime, EndTime) == true)
+                var result = _bookingService.CreateBooking(int.Parse(HttpContext.Session.GetString("UserId")), MachineID, Date, StartTime, EndTime);
+                if (result.Success)
                 {
+                    SuccesMessage = "Booking oprettet succesfuldt!";
                     return Page();
+                }
+                else
+                {
+                    ErrorMessage = result.ErrorMessage ?? "Der opstod en fejl under booking.";
                 }
             }
             catch (Exception ex)
