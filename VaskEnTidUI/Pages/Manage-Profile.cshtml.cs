@@ -13,7 +13,6 @@ namespace VaskEnTidUI.Pages
             _userRepo = userRepo;
         }
 
-        [BindProperty] public int UserId { get; set; }
         [BindProperty] public string? ApartmentNumber { get; set; }
         [BindProperty] public string? Name { get; set; }
         [BindProperty] public string? Phone { get; set; }
@@ -25,19 +24,20 @@ namespace VaskEnTidUI.Pages
 
         public void OnGet()
         {
-            // Ingen datahentning – siden bruges kun til opdatering
+            // Ingen opdatering på GET, siden viser kun formular
         }
 
         public IActionResult OnPost()
         {
-            if (UserId <= 0)
+            string? userIdString = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrWhiteSpace(userIdString) || !int.TryParse(userIdString, out int userId))
             {
-                ErrorMessage = "Indtast et gyldigt bruger-ID.";
+                ErrorMessage = "Kunne ikke finde bruger-ID i session. Log ind igen.";
                 return Page();
             }
 
             bool updated = _userRepo.UpdateUserById(
-                UserId,
+                userId,
                 ApartmentNumber,
                 Name,
                 Phone,
@@ -48,7 +48,7 @@ namespace VaskEnTidUI.Pages
             if (updated)
                 SuccessMessage = "Bruger blev opdateret succesfuldt.";
             else
-                ErrorMessage = "Kunne ikke opdatere bruger. Tjek at bruger-ID’et eksisterer.";
+                ErrorMessage = "Kunne ikke opdatere bruger. Tjek dine oplysninger.";
 
             return Page();
         }

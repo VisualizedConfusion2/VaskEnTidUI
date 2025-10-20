@@ -21,13 +21,6 @@
 
             <form method="post">
                 <div class="form-group mb-3">
-                    <label asp-for="UserId" class="form-label">Bruger ID</label>
-                    <input asp-for="UserId" class="form-control" />
-                </div>
-
-
-
-                <div class="form-group mb-3">
                     <label asp-for="Name" class="form-label">Navn</label>
                     <input asp-for="Name" class="form-control" />
                 </div>
@@ -44,7 +37,7 @@
 
                 <div class="form-group mb-3">
                     <label asp-for="Password" class="form-label">Adgangskode</label>
-                    <input asp-for="Password" type="password" class="form-control" />
+                    <input asp-for="Password" type="password" class="form-control" placeholder="Efterlad tom for at beholde eksisterende" />
                 </div>
 
                 <button type="submit" class="btn btn-primary w-100">Opdater Bruger</button>
